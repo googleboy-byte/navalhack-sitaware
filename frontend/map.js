@@ -14,8 +14,22 @@ class Contact{
     }
 }
 
+class Zone{
+    constructor(id, zonename, zonetype, zonedesc, zonecoords, zonesig=1){
+        this.id = id;
+        this.desig = zonename;
+        this.type = zonetype;
+        this.desc = zonedesc;
+        this.coords = zonecoords;
+        this.zonesig = zonesig;
+    }
+}
+
 var current_Contacts = new Map();
 var markers_ = new Map();
+var current_zones = new Map();
+var zone_polylines_ = new Map();
+
 var map = null;
 
 document.addEventListener('DOMContentLoaded', async function load_Map(){
@@ -24,7 +38,8 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
 
     map = L.map('main-map', {
         fullscreenControl: {
-            pseudoFullscreen: true // if true, fullscreen to page width and height
+            pseudoFullscreen: true, // if true, fullscreen to page width and height
+            attributionControl: false
         },
     }).setView([17.6868, 83.2185], 12);
 
@@ -67,24 +82,101 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
         console.log('Exited fullscreen mode');
     });
 
-    status_('[.] Map Loaded.');
+    status_('[+] Map Loaded.');
 
     status_('[+] Loading contacts...');
 
-    var contacts = await eel.fetch_all()();
+    var contacts = await eel.fetch_all()(); // change to api functionality
 
-    status_('Fetched contacts. Plotting...')
+    status_('[+] Fetched contacts. Plotting...')
 
     plot_contacts_fresh(contacts);
+    
+    status_('[+] Fetching zones...');
+
+    var zones = await eel.fetch_all_zones()(); // change to api functionality
+    
+    status_('[+] Fetched zones. Plotting...');
+
+    plot_zones_fresh(zones);
+
+    document.getElementById('search_contacts_input_').addEventListener('input', function(event){
+        var contact_searchcrit_ = event.target.value;
+        filter_contacts(contact_searchcrit_);
+    });
+
+    status_("[.] Done.")
 
     // statusdiv.textContent = contacts[0][2];
 
 });
 
+function filter_contacts(filter_crit_){
+    var matching_ids_ = searchMapByCriteria(current_Contacts, filter_crit_);
+    console.log(matching_ids_);
+    removeAllMarkers();
+    markers_.forEach((marker_this_, marker_id_) => {
+        if (matching_ids_.includes(marker_id_)){
+            show_marker(marker_id_);
+        }
+    });
+
+}
+
+function searchMapByCriteria(contactmap, searchCriteria) {
+    let matchingKeys = [];
+    let criteriaLower = String(searchCriteria).toLowerCase(); 
+    contactmap.forEach((value, key) => {
+        var keyadded = false;
+        if(searchCriteria.trim() == ""){
+            matchingKeys.push(key + "_marker_id_");
+            keyadded = true;
+        }
+        if (!keyadded){
+            for (let prop in value) {
+                let propValue = value[prop];            
+                if (String(propValue).toLowerCase().includes(criteriaLower)) {
+                    matchingKeys.push(key + "_marker_id_");
+                    break;
+                }
+            }
+        }
+    });
+
+    return matchingKeys;
+}
+
 
 function status_(sts_txt=""){
     var statusdiv = document.getElementById('statusdiv');
     statusdiv.textContent = sts_txt;
+}
+
+function plot_zones_fresh(zones=null){
+    if (zones != null){
+        current_zones = new Map();
+        zone_polylines_ = new Map();
+        zones.forEach(zone => {
+            var zone_id = zone[0];
+            var zone_name = zone[1];
+            var zone_type = zone[2];
+            var zone_desc = zone[3];
+            var zone_coords = zone[4];
+            var zone_sig_level = zone[5];
+            var this_Zone_ = new Zone(
+                zone_id,
+                zone_name,
+                zone_type,
+                zone_desc,
+                zone_coords,
+                zone_sig_level
+            );
+            current_zones.set(this_Zone_.id, this_Zone_);
+        });
+        for (const [key, zone] of current_zones){
+            plot_this_zone(zone);
+        }
+    }
 }
 
 function plot_contacts_fresh(contacts=null){
@@ -111,11 +203,12 @@ function plot_contacts_fresh(contacts=null){
                 id, type, desig, loc, heading, lastreport, speed, history, meta, status
             );
             current_Contacts.set(thisContact.id, thisContact);
-            for(const [key, contact] of current_Contacts){
-                plot_this_contact(contact);
-            }
+            
             // console.log(thisContact);
-        });    
+        }); 
+        for(const [key, contact] of current_Contacts){
+            plot_this_contact(contact);
+        }   
     } else{
         // current_Contacts.set(thisContact.id, thisContact);
         removeAllMarkers();
@@ -127,7 +220,8 @@ function plot_contacts_fresh(contacts=null){
     
 }
 
-function add_contact(contact){
+function add_contact(contact_singular){
+    var contact = contact_singular;
     var id = contact[0];
     var type = contact[1];
     var desig = contact[2];
@@ -167,15 +261,90 @@ function getAllMarkers() {
 
 function remove_marker(contactid){
     
-    console.log("Remove marker called: ", markers_.get(contactid + "_marker_id_"));
+    // console.log("Remove marker called: ", markers_.get(contactid + "_marker_id_"));
     var allmarkers = getAllMarkers();
 
     allmarkers.forEach(marker => {
-        console.log(marker.markerId);
+        // console.log(marker.markerId);
         if (marker.markerId == contactid + "_marker_id_"){
             marker.remove();
         }
     });
+}
+
+function removeAllMarkers(){
+    var allmarkers = getAllMarkers();
+
+    allmarkers.forEach(marker => {
+        // console.log(marker.markerId);
+        // if (marker.markerId == contactid + "_marker_id_"){
+        marker.remove();
+        // }
+    });
+}
+
+function show_marker(markerid){
+    var status_icon_colormap = new Map([
+        ['routine','blue'],
+        ['confidential', 'purple'],
+        ['urgent', 'orange'],
+        ['immediate', 'red'],
+        ['secret', 'darkpurple'],
+        ['unknown', 'green']
+    ]);
+    markers_.get(markerid).addTo(map);
+    console.log(markerid.split("_")[0]);
+
+    var marker_contact_ = current_Contacts.get(Number(markerid.split("_")[0]));
+    console.log("Markercontact: ", marker_contact_);
+
+    if (marker_contact_ && marker_contact_.heading != null){
+        addHeadingAndCompass(
+            markers_.get(marker_contact_.id+"_marker_id_"), 
+            String(marker_contact_.heading), 
+            String(marker_contact_.speed),
+            status_icon_colormap.get(marker_contact_.status)
+        );
+    }
+
+    markers_.get(markerid).openPopup();
+}
+
+function plot_this_zone(zone, new_zone_=true){
+    console.log(zone);
+    if (JSON.parse(zone.coords).length > 0){
+        console.log(JSON.parse(zone.coords));
+        var zonesig_colormap = new Map([
+            ['1','cyan'],
+            ['2', 'cyan'],
+            ['3', 'cyan'],
+            ['4', 'cyan'],
+            ['5', 'red'],
+        ]);
+        if(new_zone_){
+            
+            var coords_this_ = JSON.parse(zone.coords);
+            if (coords_this_[0] !== coords_this_[coords_this_.length - 1]) {
+                coords_this_.push(coords_this_[0]);  // Add the first coordinate to the end
+            }
+            
+            let this_polyline_ = L.polygon(
+                coords_this_, 
+                {
+                    color : zonesig_colormap.get(String(zone.zonesig)),
+                    weight: 1,        // Line thickness
+                    opacity: 0.7,     // Slight transparency
+                    className: 'glow',
+                    // fillColor: zonesig_colormap.get(String(zone.zonesig)),    // Inside fill color (cyan)
+                    fillOpacity: 0.05,
+                    // fillPattern: null,
+                }
+            ).addTo(map);
+            // this_polyline_.getElement().style.fill = "url(#diagonalStripes)";
+            map.fitBounds(this_polyline_.getBounds());
+            zone_polylines_.set(zone.id, this_polyline_);
+        }
+    }
 }
 
 function plot_this_contact(contact, new_marker_=true){
@@ -204,7 +373,10 @@ function plot_this_contact(contact, new_marker_=true){
                 });
             }
     
-            var marker_this_contact_ = L.marker([contact.current_loc[0], contact.current_loc[1]], {icon : markerIcon_ship});
+            var marker_this_contact_ = L.marker(
+                    [contact.current_loc[0], contact.current_loc[1]],
+                    {icon : markerIcon_ship}
+            );
 
             marker_this_contact_.addTo(map);
 
@@ -245,9 +417,10 @@ function plot_this_contact(contact, new_marker_=true){
     
             marker_this_contact_.on('click', function(){
                 // show_dets_marker(contact);
-                alert("removing contact: " + String(contact.designator));
-                remove_marker(contact.id);
-                // map.removeLayer(marker_this_contact_);
+                // alert("removing contact: " + String(contact.designator));
+                
+                // remove_marker(contact.id);
+                
             });
     
             markers_.set(contact.id+"_marker_id_",  marker_this_contact_);
@@ -289,8 +462,8 @@ function addHeadingAndCompass(marker, heading_param, linecolor) {
 
     // Calculate the end point of the heading line
     const headingRad = (heading - 90) * (Math.PI / 180); // Convert to radians
-    const lineEndLat = marker.getLatLng().lat + Math.sin(headingRad) * 0.05; // 0.1 is the distance in degrees
-    const lineEndLng = marker.getLatLng().lng + Math.cos(headingRad) * 0.05;
+    const lineEndLat = marker.getLatLng().lat + Math.sin(headingRad) * 0.07; // 0.1 is the distance in degrees
+    const lineEndLng = marker.getLatLng().lng + Math.cos(headingRad) * 0.07;
 
     // Draw the heading line
     const headingline = L.polyline([marker.getLatLng(), [lineEndLat, lineEndLng]], { color: "red", weight: 3 });
@@ -338,6 +511,8 @@ function show_dets_marker(contact){
     if (contact.speed != null){
         showtext += "SPEED: " + String(contact.speed) + "<br><br>";
     }
+
+    showtext += "<div class='showmorebtn'> SHOW CONTACT PROFILE </div>"
     showtext += "</div>"
     var report_text = "";
     if (contact.meta != null){

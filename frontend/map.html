@@ -23,6 +23,10 @@
 
     <!-- Leaflet Graticule JS -->
     <script src="https://unpkg.com/leaflet-graticule/src/leaflet.graticule.js"></script>
+    <!-- <script src="leaflet.pattern.js"></script> -->
+    <script src="https://unpkg.com/leaflet.gridlayer@latest/leaflet.gridlayer.min.js"></script>
+
+
 
 </head>
 <body>
@@ -30,10 +34,15 @@
         <div class="map-box-element" id="main-map">
 
         </div>
+        
         <div class="options-box-element">
+            <input id="search_contacts_input_" type="text" class="search_contacts_input" placeholder="Search contacts...">
+            <br>
             <div id="stat_box" style="z-index:1000; font-size: medium; width: 95%; margin-left: 2%; margin-right: 2%; border: 1px solid white; min-height: 250px; margin-top: 5px; overflow: auto; color: antiquewhite; padding: 5px;">
             </div>
             <div id="report_box" style="z-index:1001; font-size: medium; width: 95%; margin-left: 2%; margin-right: 2%; border: 1px solid white; min-height: 100px; margin-top: 5px; overflow: auto; color: antiquewhite; padding: 5px;">
+            </div>
+            <div id="report_box_zones" style="z-index:1001; font-size: medium; width: 95%; margin-left: 2%; margin-right: 2%; border: 1px solid white; min-height: 250px; margin-top: 5px; overflow: auto; color: antiquewhite; padding: 5px;">
             </div>
         </div>
     </div>
