@@ -10,6 +10,16 @@ body {
     flex-direction: column;
 }
 
+.infobox{
+    z-index:1000; font-size: medium; width: 95%; margin-left: 2%; margin-right: 2%; border: 1px solid white; min-height: 300px; margin-top: 5px; overflow: auto; color: antiquewhite; padding: 5px;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;
+}
+
+.infobox::-webkit-scrollbar{
+    display: none;
+}
+
 
 .glow {
     filter: blur(1px);            /* Slight blur for the glow */

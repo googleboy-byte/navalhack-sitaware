@@ -105,6 +105,11 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
         filter_contacts(contact_searchcrit_);
     });
 
+    document.getElementById('search_zones_input_').addEventListener('input', function(event){
+        var zone_searchcrit_ = event.target.value;
+        filter_zones(zone_searchcrit_);
+    });
+
     status_("[.] Done.")
 
     // statusdiv.textContent = contacts[0][2];
@@ -121,6 +126,42 @@ function filter_contacts(filter_crit_){
         }
     });
 
+}
+
+function filter_zones(filter_crit_){
+    var matching_ids_ = searchMapByCriteria_zones(current_zones, filter_crit_);
+    console.log(matching_ids_);
+    removeAllZones();
+    zone_polylines_.forEach((zone_this_, zone_id_) => {
+        if (matching_ids_.includes(zone_id_)){
+            show_zone(zone_id_);
+        }
+    });
+
+}
+
+
+function searchMapByCriteria_zones(contactmap, searchCriteria) {
+    let matchingKeys = [];
+    let criteriaLower = String(searchCriteria).toLowerCase(); 
+    contactmap.forEach((value, key) => {
+        var keyadded = false;
+        if(searchCriteria.trim() == ""){
+            matchingKeys.push(key);
+            keyadded = true;
+        }
+        if (!keyadded){
+            for (let prop in value) {
+                let propValue = value[prop];            
+                if (String(propValue).toLowerCase().includes(criteriaLower)) {
+                    matchingKeys.push(key);
+                    break;
+                }
+            }
+        }
+    });
+
+    return matchingKeys;
 }
 
 function searchMapByCriteria(contactmap, searchCriteria) {
@@ -310,6 +351,50 @@ function show_marker(markerid){
     markers_.get(markerid).openPopup();
 }
 
+function show_zone(zoneid){
+    zone_polylines_.get(zoneid).addTo(map);
+    zone_polylines_.get(zoneid).openPopup();
+}
+
+function getAllZones() {
+
+    var allMarkersObjArray_zones = []; // for marker objects
+    var allMarkersGeoJsonArray_zones = []; // for readable geoJson markers
+
+    map.eachLayer(function (layer) {
+        if (layer instanceof L.Polygon) { // Check if the layer is a marker
+            allMarkersObjArray_zones.push(layer); // Add marker object to array
+            allMarkersGeoJsonArray_zones.push(JSON.stringify(layer.toGeoJSON())); // Convert marker to GeoJSON and add to array
+        }
+    });
+
+    return allMarkersObjArray_zones;
+}
+
+function remove_zone(zoneid){
+    
+    // console.log("Remove marker called: ", markers_.get(contactid + "_marker_id_"));
+    var allzones = getAllZones();
+
+    allzones.forEach(zone => {
+        // console.log(marker.markerId);
+        if (zone.zoneid == zoneid){
+            zone.remove();
+        }
+    });
+}
+
+function removeAllZones(){
+    var allzones = getAllZones();
+
+    allzones.forEach(zone => {
+        // console.log(marker.markerId);
+        // if (marker.markerId == contactid + "_marker_id_"){
+        zone.remove();
+        // }
+    });
+}
+
 function plot_this_zone(zone, new_zone_=true){
     console.log(zone);
     if (JSON.parse(zone.coords).length > 0){
@@ -342,7 +427,30 @@ function plot_this_zone(zone, new_zone_=true){
             ).addTo(map);
             // this_polyline_.getElement().style.fill = "url(#diagonalStripes)";
             map.fitBounds(this_polyline_.getBounds());
+            this_polyline_.zoneid = zone.id;
+
+            var this_zone_popup_ = document.createElement('div');
+            this_zone_popup_.style.backgroundColor = 'rgb(46, 46, 46)';
+            this_zone_popup_.style.color = "antiquewhite";
+            this_zone_popup_.style.fontFamily = "Arial, Helvetica, sans-serif";
+            this_zone_popup_.style.fontSize = "small";
+            this_zone_popup_.style.padding = "5px 5px";
+            this_zone_popup_.style.borderRadius = "5px";
+            this_zone_popup_.style.border = "1px solid antiquewhite";
+            this_zone_popup_.style.width = "100%";
+            this_zone_popup_.textContent = zone.desig;
+
+            this_polyline_.on('mouseover', function(){
+                this_polyline_.openPopup();
+                show_dets_zone(zone);
+            });
+
             zone_polylines_.set(zone.id, this_polyline_);
+
+            this_polyline_.bindPopup(this_zone_popup_, {
+                autoClose: false,
+            });
+            this_polyline_.openPopup();
         }
     }
 }
@@ -521,5 +629,30 @@ function show_dets_marker(contact){
     this_marker_report_element_.innerHTML = report_text;
     this_marker_properties_element_.innerHTML = "";
     this_marker_properties_element_.innerHTML = showtext;
+}
+
+function show_dets_zone(zone){
+    // show basic properties of contact
+    
+    var this_zone_properties_element_ = document.getElementById('report_box_zones');
+    var showtext = "";
+    showtext += "<p style='font-size:25px'; font-weight:bold;>" + zone.desig + "<br></p>";
+    showtext += "<div style='width:98%'; height:100%; overflow:auto;>";
+    
+    if (zone.type != null){
+        showtext += "TYPE: " + String(zone.type) + "<br><br>";
+    }
+    if (zone.desc != null){
+        showtext += zone.desc + "<br><br>";
+    }
+    if (zone.coords != null){
+        showtext += "COORDS: " + String(zone.coords) + "<br><br>"
+    }
+
+    // showtext += "<div class='showmorebtn'> SHOW CONTACT PROFILE </div>"
+    showtext += "</div>"
+
+    this_zone_properties_element_.innerHTML = "";
+    this_zone_properties_element_.innerHTML = showtext;
 }
 
