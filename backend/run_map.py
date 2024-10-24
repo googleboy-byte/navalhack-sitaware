@@ -8,4 +8,4 @@ def fetch_all():
     all_recs = db_ops.get_all_reports()
     return all_recs
 
-eel.start('map.html', size=(1200, 900), port=8001)
+eel.start('map.html', port=8001)
