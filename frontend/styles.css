@@ -10,6 +10,14 @@ body {
     flex-direction: column;
 }
 
+.grid-label {
+    font-weight: bold;
+    color: rgba(0, 161, 161, 0.556);
+    background-color: rgba(0, 0, 0, 0.0);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
 .infobox{
     z-index:1000; font-size: medium; width: 95%; margin-left: 2%; margin-right: 2%; border: 1px solid white; min-height: 300px; margin-top: 5px; overflow: auto; color: antiquewhite; padding: 5px;
     -ms-overflow-style: none;  /* IE and Edge */
@@ -153,6 +161,8 @@ body {
     align-items: center;
     font-size: 1.5rem;
     border-radius: 8px;
+    padding: 10px 10px;
+    border: 1px solid rgba(0, 255, 255, 0.465);
 }
 
 .options-box-element {

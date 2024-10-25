@@ -32,6 +32,7 @@ var zone_polylines_ = new Map();
 
 var map = null;
 let gridLines = [];
+let labelMarkers = [];
 
 document.addEventListener('DOMContentLoaded', async function load_Map(){
     
@@ -123,25 +124,26 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
 });
 
 function drawGrid() {
-    // Clear existing grid lines
+    // Clear existing grid lines and labels
     gridLines.forEach(line => map.removeLayer(line));
     gridLines = [];
+    labelMarkers.forEach(marker => map.removeLayer(marker));
+    labelMarkers = [];
 
-    // Get current bounds and zoom
+    // Get current bounds and zoom level
     let bounds = map.getBounds();
     let zoom = map.getZoom();
-
-    // Define grid spacing (adjust spacing based on zoom level)
     let gridSpacing = zoom > 10 ? 0.25 : zoom > 5 ? 0.5 : 1;
 
-    // Calculate the start and end latitudes/longitudes based on map bounds
+    // Define start and end lat/lng for grid
     let startLat = Math.floor(bounds.getSouth() / gridSpacing) * gridSpacing;
     let endLat = Math.ceil(bounds.getNorth() / gridSpacing) * gridSpacing;
     let startLng = Math.floor(bounds.getWest() / gridSpacing) * gridSpacing;
     let endLng = Math.ceil(bounds.getEast() / gridSpacing) * gridSpacing;
 
-    // Draw latitude lines (horizontal)
+    // Draw latitude lines (horizontal) and add latitude labels above the grid lines
     for (let lat = startLat; lat <= endLat; lat += gridSpacing) {
+        // Horizontal grid line
         let polyline = L.polyline([[lat, startLng], [lat, endLng]], {
             color: 'cyan',
             weight: 2,
@@ -149,10 +151,22 @@ function drawGrid() {
             dashArray: '4, 4'
         }).addTo(map);
         gridLines.push(polyline);
+
+        // Place label at equal intervals above the line
+        let labelMarker = L.marker([lat + gridSpacing * 0.05, startLng + gridSpacing + 0.05], {
+            icon: L.divIcon({
+                className: 'grid-label',
+                html: `${lat.toFixed(2)}°`, // Latitude label
+                iconSize: [40, 20],
+                iconAnchor: [20, 0] // Centered above the line
+            })
+        }).addTo(map);
+        labelMarkers.push(labelMarker);
     }
 
-    // Draw longitude lines (vertical)
+    // Draw longitude lines (vertical) and add longitude labels above the grid lines
     for (let lng = startLng; lng <= endLng; lng += gridSpacing) {
+        // Vertical grid line
         let polyline = L.polyline([[startLat, lng], [endLat, lng]], {
             color: 'cyan',
             weight: 2,
@@ -160,9 +174,28 @@ function drawGrid() {
             dashArray: '4, 4'
         }).addTo(map);
         gridLines.push(polyline);
+
+        // Place label at equal intervals above the line
+        let labelMarker = L.marker([startLat + gridSpacing, lng + gridSpacing * 0.05], {
+            icon: L.divIcon({
+                className: 'grid-label',
+                html: `${lng.toFixed(2)}°`, // Longitude label
+                iconSize: [40, 20],
+                iconAnchor: [0, 20] // Centered above the line
+            })
+        }).addTo(map);
+        labelMarkers.push(labelMarker);
     }
 }
 
+function getExcelColumnLabel(index) {
+    let label = '';
+    while (index >= 0) {
+        label = String.fromCharCode((index % 26) + 65) + label;
+        index = Math.floor(index / 26) - 1;
+    }
+    return label;
+}
 
 
 function filter_contacts(filter_crit_){
