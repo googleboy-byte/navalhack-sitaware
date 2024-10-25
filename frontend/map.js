@@ -192,7 +192,9 @@ function filter_zones(filter_crit_){
 
 function searchMapByCriteria_zones(contactmap, searchCriteria) {
     let matchingKeys = [];
-    let criteriaLower = String(searchCriteria).toLowerCase(); 
+    let criteriaLower = String(searchCriteria).toLowerCase();
+    let criteria_markers = criteriaLower.split('|').map(value => value.trim());; 
+    console.log(criteria_markers);
     contactmap.forEach((value, key) => {
         var keyadded = false;
         if(searchCriteria.trim() == ""){
@@ -202,7 +204,7 @@ function searchMapByCriteria_zones(contactmap, searchCriteria) {
         if (!keyadded){
             for (let prop in value) {
                 let propValue = value[prop];            
-                if (String(propValue).toLowerCase().includes(criteriaLower)) {
+                if (criteria_markers.some(value => String(propValue).toLowerCase().includes(value))) {
                     matchingKeys.push(key);
                     break;
                 }
@@ -216,6 +218,8 @@ function searchMapByCriteria_zones(contactmap, searchCriteria) {
 function searchMapByCriteria(contactmap, searchCriteria) {
     let matchingKeys = [];
     let criteriaLower = String(searchCriteria).toLowerCase(); 
+    let criteria_markers = criteriaLower.split('|').map(value => value.trim());; 
+    console.log(criteria_markers);
     contactmap.forEach((value, key) => {
         var keyadded = false;
         if(searchCriteria.trim() == ""){
@@ -225,7 +229,7 @@ function searchMapByCriteria(contactmap, searchCriteria) {
         if (!keyadded){
             for (let prop in value) {
                 let propValue = value[prop];            
-                if (String(propValue).toLowerCase().includes(criteriaLower)) {
+                if (criteria_markers.some(value => String(propValue).toLowerCase().includes(value))) {
                     matchingKeys.push(key + "_marker_id_");
                     break;
                 }
