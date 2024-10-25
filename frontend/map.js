@@ -31,6 +31,7 @@ var current_zones = new Map();
 var zone_polylines_ = new Map();
 
 var map = null;
+let gridLines = [];
 
 document.addEventListener('DOMContentLoaded', async function load_Map(){
     
@@ -62,6 +63,11 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
     openStreetMap.addTo(map);
     openSeaMap.addTo(map);
     darkTileLayer.addTo(map);
+
+    drawGrid();
+
+    // Redraw grid on move and zoom
+    map.on('moveend zoomend', drawGrid);
 
     // var graticule = L.graticule({
     //     interval: 0.2, // Set the interval for grid lines
@@ -115,6 +121,49 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
     // statusdiv.textContent = contacts[0][2];
 
 });
+
+function drawGrid() {
+    // Clear existing grid lines
+    gridLines.forEach(line => map.removeLayer(line));
+    gridLines = [];
+
+    // Get current bounds and zoom
+    let bounds = map.getBounds();
+    let zoom = map.getZoom();
+
+    // Define grid spacing (adjust spacing based on zoom level)
+    let gridSpacing = zoom > 10 ? 0.25 : zoom > 5 ? 0.5 : 1;
+
+    // Calculate the start and end latitudes/longitudes based on map bounds
+    let startLat = Math.floor(bounds.getSouth() / gridSpacing) * gridSpacing;
+    let endLat = Math.ceil(bounds.getNorth() / gridSpacing) * gridSpacing;
+    let startLng = Math.floor(bounds.getWest() / gridSpacing) * gridSpacing;
+    let endLng = Math.ceil(bounds.getEast() / gridSpacing) * gridSpacing;
+
+    // Draw latitude lines (horizontal)
+    for (let lat = startLat; lat <= endLat; lat += gridSpacing) {
+        let polyline = L.polyline([[lat, startLng], [lat, endLng]], {
+            color: 'cyan',
+            weight: 2,
+            opacity: 0.1,
+            dashArray: '4, 4'
+        }).addTo(map);
+        gridLines.push(polyline);
+    }
+
+    // Draw longitude lines (vertical)
+    for (let lng = startLng; lng <= endLng; lng += gridSpacing) {
+        let polyline = L.polyline([[startLat, lng], [endLat, lng]], {
+            color: 'cyan',
+            weight: 2,
+            opacity: 0.1,
+            dashArray: '4, 4'
+        }).addTo(map);
+        gridLines.push(polyline);
+    }
+}
+
+
 
 function filter_contacts(filter_crit_){
     var matching_ids_ = searchMapByCriteria(current_Contacts, filter_crit_);
