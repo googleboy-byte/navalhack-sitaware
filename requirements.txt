@@ -1,0 +1,10 @@
+transformers
+datasets
+torch
+opencv-python
+pytesseract
+spacy
+flask
+flask-cors
+leaflet
+langchain
