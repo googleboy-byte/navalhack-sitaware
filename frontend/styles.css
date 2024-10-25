@@ -76,6 +76,7 @@ body {
     outline: none;
     background-color: #f9f9f9;
     transition: border-color 0.3s, background-color 0.3s;
+    font-weight: bold;
 }
 
 .search_contacts_input:focus {
