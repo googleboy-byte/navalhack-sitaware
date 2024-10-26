@@ -145,12 +145,60 @@
                     <div
                       class="rounded-lg border text-card-foreground shadow-sm h-full bg-black relative"
                     >
-                      <div class="flex flex-col space-y-1.5 p-6">
+                      <div id="commsbox" class="flex flex-col space-y-1.5 p-6">
                         <h3
                           class="text-2xl font-semibold leading-none tracking-tight"
                         >
                           Comms
                         </h3>
+
+                        <input class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-full font-light"
+                           id="textInput" placeholder="Type your text and press Enter">
+                        </input>
+
+                        <script>
+                          const textInput = document.getElementById('textInput');
+                  
+                          // Add event listener to capture "Enter" key press
+                          textInput.addEventListener('keydown', function(event) {
+                              if (event.key === 'Enter' && !event.shiftKey) {
+                                  event.preventDefault(); // Prevents the default behavior of Enter (newline)
+                                  submitText();
+                                  // textInput.value = "";
+                              }
+                          });
+                  
+                          // Function to submit text to FastAPI
+                          function submitText() {
+                              const text = textInput.value;
+                  
+                              fetch('http://127.0.0.1:8000/api/post/textdata', {
+                                  method: 'POST',
+                                  headers: {
+                                      'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({ text: text }),
+                              })
+                              .then(response => response.json())
+                              .then(data => {
+                                  console.log('Success:', data);
+                                  // Clear the textarea after submission
+                                  var newdiv = document.createElement('div');
+                                  newdiv.className = 'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-full font-light';
+                                  newdiv.textContent = textInput.value;
+                                  document.getElementById('commsbox').appendChild(newdiv);
+                                  textInput.value = '';
+                              })
+                              .catch((error) => {
+                                  console.error('Error:', error);
+                              });
+                          }
+                        </script>
+<!-- 
+                        <form id="fileForm">
+                          <input type="file" id="fileInput" />
+                          <button type="button" onclick="submitFile()">Upload File</button>
+                        </form> -->
                       </div>
                       <div class="p-2">
                         <div

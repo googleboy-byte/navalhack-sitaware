@@ -10,6 +10,25 @@ body {
     flex-direction: column;
 }
 
+.textInput {
+    width: 95%; /* Takes up 95% of the container width */
+    max-width: 800px; /* Optional: set a maximum width */
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    resize: none;
+    color: black;
+}
+
+/* Optional: Add focus styles */
+.textInput:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+}
+
 .grid-label {
     font-weight: bold;
     color: rgba(0, 161, 161, 0.556);

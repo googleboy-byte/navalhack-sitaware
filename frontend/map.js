@@ -117,11 +117,74 @@ document.addEventListener('DOMContentLoaded', async function load_Map(){
         filter_zones(zone_searchcrit_);
     });
 
+    // const form = document.getElementById('textForm');
+    // const textInput = document.getElementById('textInput');
+
+    // // Add event listener for "Enter" key press
+    // textInput.addEventListener('keydown', function (event) {
+    //     if (event.key === 'Enter' && !event.shiftKey) {
+    //         event.preventDefault(); // Prevents the default behavior of Enter (adding a newline)
+    //         submitText();
+    //     }
+    // });
+
     status_("[.] Done.")
 
     // statusdiv.textContent = contacts[0][2];
 
 });
+
+// function submitFile() {
+//     const fileInput = document.getElementById('fileInput');
+//     const file = fileInput.files[0];
+
+//     if (!file) {
+//         alert("Please select a file to upload");
+//         return;
+//     }
+
+//     // Use FormData to send file as form data
+//     const formData = new FormData();
+//     formData.append("file", file);
+
+//     fetch('http://127.0.0.1:8000/api/post/file', {
+//         method: 'POST',
+//         body: formData,
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         console.log('Success:', data);
+//         // Clear the file input after submission
+//         fileInput.value = '';
+//     })
+//     .catch((error) => {
+//         console.error('Error:', error);
+//     });
+// }
+
+// function submitText() {
+//     const textInput = document.getElementById('textInput');
+//     const text = textInput.value;
+//     console.log(text);
+
+//     // Make a POST request using Fetch API
+//     fetch('http://127.0.0.1:8000/api/post/textdata', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({ text: text }),
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         console.log('Success:', data);
+//         // Clear the textarea after submission
+//         textInput.value = '';
+//     })
+//     .catch((error) => {
+//         console.error('Error:', error);
+//     });
+// }
 
 function drawGrid() {
     // Clear existing grid lines and labels
