@@ -153,7 +153,7 @@
                         </h3>
 
                         <input class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-full font-light"
-                           id="textInput" placeholder="Type your text and press Enter">
+                           id="textInput" placeholder="New data...">
                         </input>
 
                         <script>
@@ -193,6 +193,43 @@
                                   console.error('Error:', error);
                               });
                           }
+                        </script>
+                        <input type="file" id="fileInput" 
+                        class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-full font-light">
+                        <br>
+                        <button type="button" onclick="uploadFile()" class="UploadBtn">Upload File</button>
+                    
+                        <script>
+                            function uploadFile() {
+                                const fileInput = document.getElementById('fileInput');
+                                const file = fileInput.files[0];
+                    
+                                // Check if a file is selected
+                                if (!file) {
+                                    alert("Please select a file to upload.");
+                                    return;
+                                }
+                    
+                                const formData = new FormData();
+                                formData.append("file", file);
+                    
+                                fetch('http://127.0.0.1:8000/api/post/file', {
+                                    method: 'POST',
+                                    body: formData,
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('Success:', data);
+                                    var newdiv1 = document.createElement('div');
+                                    newdiv1.className = 'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-full font-light';
+                                    newdiv1.textContent = "FILE UPLOADED: " + fileInput.value;
+                                    document.getElementById('commsbox').appendChild(newdiv1);
+                                    fileInput.value = '';  // Clear the input after upload
+                                })
+                                .catch((error) => {
+                                    console.error('Error:', error);
+                                });
+                            }
                         </script>
 <!-- 
                         <form id="fileForm">
